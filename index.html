@@ -1,0 +1,192 @@
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Бот Лайкер - Ваш помощник в Telegram</title>
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+    }
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        color: #2c3e50;
+        text-align: center;
+        font-size: 2.5em;
+        margin-bottom: 30px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    h2 {
+        color: #34495e;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+        margin-top: 30px;
+    }
+    form {
+        margin-bottom: 20px;
+    }
+    input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #bdc3c7;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+    button:hover {
+        background-color: #2980b9;
+    }
+    #searchGroupsForm button {
+        background-color: #2ecc71;
+    }
+    #searchGroupsForm button:hover {
+        background-color: #27ae60;
+    }
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background-color: #2ecc71;
+        color: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        display: none;
+        z-index: 1000;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Бот Лайкер</h1>
+        
+        <h2>🔍 Поиск групп</h2>
+        <form id="searchGroupsForm">
+            <button type="submit">Найти и сохранить группы</button>
+        </form>
+
+        <h2>➕ Добавить группу</h2>
+        <form id="addGroupForm">
+            <input type="text" name="group" placeholder="Введите название группы" required>
+            <button type="submit">Добавить группу</button>
+        </form>
+
+        <h2>🔑 Установить ключевые слова</h2>
+        <form id="setKeywordsForm">
+            <input type="text" name="keywords" placeholder="Введите ключевые слова, разделенные запятой" required>
+            <button type="submit">Установить ключевые слова</button>
+        </form>
+
+        <h2>👤 Реакция на пользователя</h2>
+        <form id="reactForm">
+            <input type="text" name="user_id" placeholder="ID или юзернейм пользователя" required>
+            <input type="text" name="reaction" placeholder="Введите реакцию" required>
+            <button type="submit">Отправить реакцию</button>
+        </form>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.backgroundColor = type === 'success' ? '#2ecc71' : '#e74c3c';
+            notification.style.display = 'block';
+            
+            anime({
+                targets: notification,
+                opacity: [0, 1],
+                translateY: [-20, 0],
+                easing: 'easeOutElastic(1, .8)',
+                duration: 800
+            });
+
+            setTimeout(() => {
+                anime({
+                    targets: notification,
+                    opacity: 0,
+                    translateY: -20,
+                    easing: 'easeInElastic(1, .8)',
+                    duration: 800,
+                    complete: function() {
+                        notification.style.display = 'none';
+                    }
+                });
+            }, 3000);
+        }
+
+        document.getElementById('addGroupForm').onsubmit = function(event) {
+            event.preventDefault(); // Предотвратить отправку формы
+            const formData = new FormData(this);
+            fetch('/add_group', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => alert(data.message));
+        };
+
+        document.getElementById('setKeywordsForm').onsubmit = function(event) {
+    event.preventDefault(); // Предотвратить отправку формы
+    const formData = new FormData(this);
+    fetch('/set_keywords', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'error') {
+                alert(data.message);
+            } else {
+                alert(data.message + ': ' + data.keywords.join(', '));
+            }
+        });
+};
+
+
+        document.getElementById('reactForm').onsubmit = function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/react', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => alert(data.message));
+        };
+
+        // Добавим анимацию для кнопок
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                anime({
+                    targets: button,
+                    scale: 1.05,
+                    duration: 300,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            });
+            button.addEventListener('mouseleave', () => {
+                anime({
+                    targets: button,
+                    scale: 1,
+                    duration: 300,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
