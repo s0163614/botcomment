@@ -6,9 +6,9 @@ from threading import Thread
 app = Flask(__name__)
 
 # Настройки
-API_ID = '24893644'  # Ваш API ID
-API_HASH = '159f9a18aa19626cec19744ddde9b558'  # Ваш API Hash
-PHONE = '+79528166327'  # Номер телефона для авторизации
+API_ID = '24893655'  # Ваш API ID
+API_HASH = '159f9a18aa19626cwc19744ddde9b558'  # Ваш API Hash
+PHONE = '+79528866327'  # Номер телефона для авторизации
 
 # Создаем клиента
 client = TelegramClient('my_bot', API_ID, API_HASH)
